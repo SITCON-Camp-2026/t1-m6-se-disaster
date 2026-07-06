@@ -15,9 +15,58 @@
   },
   {
     "id": "M-003",
-    "rawText": "王阿姨那邊已不缺鏟子，現在比較需要水電。原本那張單可能沒更新。",
+    "rawText": "老街口那邊已不缺鏟子，現在比較需要水電。原本那張單可能沒更新。",
     "sourceType": "field_report",
     "verificationStatus": "needs_review",
     "updatedAt": "2026-07-20T09:40:00+08:00"
+  },
+  {
+    "id": "M-004",
+    "rawText": "有人在群組說溪畔活動中心還有很多雨鞋，叫大家直接過去拿。",
+    "sourceType": "social_post",
+    "verificationStatus": "unverified",
+    "updatedAt": "2026-07-20T10:05:00+08:00"
+  },
+  {
+    "id": "M-005",
+    "rawText": "志工說臨時物資站缺飲用水，但不確定是北側入口還是河堤旁那個點。",
+    "sourceType": "volunteer_update",
+    "verificationStatus": "needs_review",
+    "updatedAt": "2026-07-20T10:18:00+08:00"
+  },
+  {
+    "id": "M-006",
+    "rawText": "截圖寫『中午前道路封閉』，但不知道截圖是哪一天，也不知道是不是官方公告。",
+    "sourceType": "official_notice",
+    "verificationStatus": "needs_review",
+    "updatedAt": "2026-07-20T10:32:00+08:00"
+  },
+  {
+    "id": "M-007",
+    "rawText": "電話轉述：橋邊有老人家需要藥，但沒有姓名、聯絡方式，也不知道橋是哪一座。",
+    "sourceType": "phone_call",
+    "verificationStatus": "needs_review",
+    "updatedAt": "2026-07-20T10:45:00+08:00"
+  },
+  {
+    "id": "M-008",
+    "rawText": "有人回報學校側門可以當集合點，另一位志工說那裡剛剛淹水不適合停留。",
+    "sourceType": "field_report",
+    "verificationStatus": "needs_review",
+    "updatedAt": "2026-07-20T11:02:00+08:00"
+  },
+  {
+    "id": "M-009",
+    "rawText": "社群貼文說某工班可以支援水電，但留言有人說那是昨天的名單，今天沒空。",
+    "sourceType": "social_post",
+    "verificationStatus": "unverified",
+    "updatedAt": "2026-07-20T11:18:00+08:00"
+  },
+  {
+    "id": "M-010",
+    "rawText": "現場回報『A 區先不要再派人』，但沒有說是人太多、道路危險，還是任務已完成。",
+    "sourceType": "field_report",
+    "verificationStatus": "needs_review",
+    "updatedAt": "2026-07-20T11:35:00+08:00"
   }
 ]

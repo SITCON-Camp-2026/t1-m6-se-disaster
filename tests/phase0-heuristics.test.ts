@@ -4,6 +4,7 @@ import {
   buildPhase0Drafts,
   getDraftPersonnelLabel,
   getDraftSupportLabel,
+  getPhase0SummaryStats,
 } from "../src/features/phase-0/phase0-drafts";
 import { createPhase0Judgement } from "../src/features/phase-0/phase0-heuristics";
 
@@ -68,5 +69,14 @@ describe("phase 0 heuristics", () => {
     expect(typeof drafts[0]?.personnelType).toBe("string");
     expect(getDraftPersonnelLabel("inspection")).toBe("查核人員");
     expect(getDraftPersonnelLabel("debris")).toBe("清泥人員");
+  });
+
+  it("derives trusted and pending summary counts from reliability", () => {
+    const drafts = buildPhase0Drafts(messyReports);
+    const stats = getPhase0SummaryStats(drafts, messyReports.length);
+
+    expect(stats.trustedCount).toBe(4);
+    expect(stats.pendingCount).toBe(8);
+    expect(stats.trustedCount + stats.pendingCount).toBe(messyReports.length);
   });
 });

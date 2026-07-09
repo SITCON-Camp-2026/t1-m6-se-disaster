@@ -71,3 +71,14 @@ export function buildPhase0Drafts(
     nextStep: "請填入下一步建議。",
   }));
 }
+
+export function getPhase0SummaryStats(drafts: Phase0Draft[], totalMissionCount: number) {
+  const trustedCount = drafts.filter((draft) => draft.reliability === "high").length;
+  const pendingCount = Math.max(0, totalMissionCount - trustedCount);
+
+  return {
+    trustedCount,
+    pendingCount,
+    totalMissionCount,
+  };
+}

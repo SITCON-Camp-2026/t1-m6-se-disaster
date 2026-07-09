@@ -6,6 +6,7 @@ import {
   buildPhase0Drafts,
   getDraftPersonnelLabel,
   getDraftSupportLabel,
+  getPhase0SummaryStats,
   type Phase0Draft,
   type Phase0PersonnelType,
   type Phase0Reliability,
@@ -35,6 +36,11 @@ export function Phase0Workbench({
     [drafts, selectedRecord.id],
   );
 
+  const { trustedCount, pendingCount, totalMissionCount } = getPhase0SummaryStats(
+    drafts,
+    records.length,
+  );
+
   function updateDraft(patch: Partial<Phase0Draft>) {
     setDrafts((current) =>
       current.map((draft) =>
@@ -46,12 +52,31 @@ export function Phase0Workbench({
   return (
     <div className="workbench">
       <div className="workbench__intro">
-        <p className="eyebrow">整理工作台</p>
-        <h2>第一階段的成功不是分類正確，而是把為什麼現在還不能判斷說清楚。</h2>
-        <p>
-          這裡先只標示安全邊界，真正的候選判斷要由小組和 coding agent
-          補上；這不是 runtime LLM 分析，也不是正式資料模型。
-        </p>
+        <div className="workbench__intro-top">
+          <div>
+            <p className="eyebrow">整理工作台</p>
+            <h2>第一階段的成功不是分類正確，而是把為什麼現在還不能判斷說清楚。</h2>
+            <p>
+              這裡先只標示安全邊界，真正的候選判斷要由小組和 coding agent
+              補上；這不是 runtime LLM 分析，也不是正式資料模型。
+            </p>
+          </div>
+
+          <div className="workbench__stats" aria-label="整理統計">
+            <div className="workbench__stat-card">
+              <span className="workbench__stat-label">可信的資訊</span>
+              <strong>{trustedCount}</strong>
+            </div>
+            <div className="workbench__stat-card">
+              <span className="workbench__stat-label">待確認</span>
+              <strong>{pendingCount}</strong>
+            </div>
+            <div className="workbench__stat-card">
+              <span className="workbench__stat-label">總 mission 數量</span>
+              <strong>{totalMissionCount}</strong>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="workbench__layout">

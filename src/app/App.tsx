@@ -1,11 +1,13 @@
 import { useState } from "react";
 import messyReports from "../fixtures/phase-0/messy-reports.json";
 import { EmptyState } from "../components/EmptyState";
-import { Phase0ActionLensPanel } from "../features/phase-0/Phase0ActionLensPanel";
 import { Phase0RawInfoPanel } from "../features/phase-0/Phase0RawInfoPanel";
 import { Phase0Workbench } from "../features/phase-0/Phase0Workbench";
 import type { Phase0MessyRecord } from "../features/phase-0/phase0-types";
-import { V1ActionFlowPage } from "../features/v1/V1ActionFlowPage";
+import {
+  V1ActionFlowPage,
+  V1ActionFlowPanel,
+} from "../features/v1/V1ActionFlowPage";
 
 type TabKey = "raw" | "workbench" | "actionLens";
 
@@ -43,9 +45,6 @@ export function App() {
           第一階段先用 coding agent
           做出可展示的前端原型，再從成果中看見資料品質、角色、狀態與來源的限制。
         </p>
-        <a className="hero__link" href="./v1/">
-          進入 v1 行動者確認流程
-        </a>
       </header>
 
       <nav className="tabs" aria-label="第一階段工作區">
@@ -77,11 +76,7 @@ export function App() {
             onSelect={setSelectedRecordId}
           />
         ) : (
-          <Phase0ActionLensPanel
-            records={phase0Records}
-            selectedRecordId={selectedRecordId}
-            onSelect={setSelectedRecordId}
-          />
+          <V1ActionFlowPanel records={phase0Records} />
         )}
       </section>
     </main>

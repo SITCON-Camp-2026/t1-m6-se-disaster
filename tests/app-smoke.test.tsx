@@ -60,26 +60,29 @@ describe("App", () => {
     expect(
       screen.getByRole("heading", { name: "行動者判讀", level: 2 }),
     ).toBeInTheDocument();
-    expect(screen.getByText("需要的人員種類：")).toBeInTheDocument();
-    expect(screen.getByRole("combobox", { name: "目前狀態" })).toHaveValue(
-      "reported",
-    );
-    expect(screen.getByText("訊息來源：")).toBeInTheDocument();
-    expect(screen.getByText("社群轉錄")).toBeInTheDocument();
-    expect(screen.getByText("目前風險與可信度原因")).toBeInTheDocument();
-    expect(screen.getByText("有：有提到需求或缺什麼物資")).toBeInTheDocument();
-    expect(screen.getByText("下一步建議")).toBeInTheDocument();
+    expect(screen.getByText("可行動判斷度")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /可執行區/ }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /資料不足區/ }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("可能需要的人")).toBeInTheDocument();
+    expect(screen.getByText("可行動判斷說明")).toBeInTheDocument();
+    expect(
+      screen.queryByText("有：有提到需求或缺什麼物資"),
+    ).not.toBeInTheDocument();
   });
 
   it("lets action takers change the activity status menu", () => {
     render(<App />);
 
     fireEvent.click(screen.getByRole("button", { name: "行動者判讀" }));
-    fireEvent.change(screen.getByRole("combobox", { name: "目前狀態" }), {
+    fireEvent.change(screen.getByRole("combobox", { name: "v1 目前狀態" }), {
       target: { value: "blocked" },
     });
 
-    expect(screen.getByRole("combobox", { name: "目前狀態" })).toHaveValue(
+    expect(screen.getByRole("combobox", { name: "v1 目前狀態" })).toHaveValue(
       "blocked",
     );
     expect(screen.queryByText("行動提醒")).not.toBeInTheDocument();
@@ -108,12 +111,12 @@ describe("App", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("links to the v1 action flow from the home page", () => {
+  it("does not show a separate v1 entry link on the home page", () => {
     render(<App />);
 
     expect(
-      screen.getByRole("link", { name: "進入 v1 行動者確認流程" }),
-    ).toHaveAttribute("href", "./v1/");
+      screen.queryByRole("link", { name: "進入 v1 行動者確認流程" }),
+    ).not.toBeInTheDocument();
   });
 
   it("renders the v1 action flow at the v1 route", () => {
@@ -127,10 +130,35 @@ describe("App", () => {
       screen.getByRole("heading", { name: "看訊息來源與查核狀態" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: "能不能直接行動？" }),
+      screen.getByRole("heading", { name: "可行動判斷說明" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("最重要判斷")).toBeInTheDocument();
+    expect(screen.getByText("可行動判斷度")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /可執行區/ }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /資料不足區/ }),
     ).toBeInTheDocument();
     expect(
       screen.getByText("資料仍來自 Phase 0 原始資訊", { exact: false }),
     ).toBeInTheDocument();
+  });
+
+  it("filters v1 records and shows a supplement field for insufficient data", () => {
+    window.history.pushState({}, "", "/v1/");
+
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: /資料不足區/ }));
+
+    expect(screen.getByText("補充資訊")).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "補充資訊" })).toHaveValue("");
+    fireEvent.change(screen.getByRole("textbox", { name: "補充資訊" }), {
+      target: { value: "補充：現場更新時間待確認" },
+    });
+    expect(screen.getByRole("textbox", { name: "補充資訊" })).toHaveValue(
+      "補充：現場更新時間待確認",
+    );
   });
 });

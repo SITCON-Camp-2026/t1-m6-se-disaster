@@ -38,7 +38,7 @@ export function Phase0ActionLensCard({
           <h3>去之前先看這裡，避免把未確認資訊變成白工</h3>
         </div>
         <span className={credibilityClassName[lens.credibility]}>
-          可信度：{lens.credibility}
+          可行動判斷度：{lens.credibility}
         </span>
       </div>
 
@@ -87,26 +87,10 @@ export function Phase0ActionLensCard({
       </section>
 
       <section className="action-lens__section">
-        <h4>目前風險與可信度原因</h4>
-        <div className="action-lens__checks">
-          {lens.credibilityReasons.map((reason) => (
-            <span
-              className={
-                reason.startsWith("有")
-                  ? "action-lens__check action-lens__check--yes"
-                  : "action-lens__check action-lens__check--no"
-              }
-              key={reason}
-            >
-              {reason}
-            </span>
-          ))}
-        </div>
-        <ul>
-          {lens.riskReasons.map((reason) => (
-            <li key={reason}>{reason}</li>
-          ))}
-        </ul>
+        <h4>可行動判斷說明</h4>
+        <p>
+          這個判斷會看原文是否交代需求、規格、地點、時間與需要的人。它用來協助判斷要不要繼續確認，不代表已查核，也不代表可以直接出發。
+        </p>
       </section>
 
       <section className="action-lens__next-step">

@@ -8,6 +8,7 @@ import {
   getDraftDetailOptions,
   getDraftSupportLabel,
   getPhase0SummaryStats,
+  inferSourceExplanation,
   type Phase0Draft,
   type Phase0ResourceDetailType,
   type Phase0Reliability,
@@ -41,6 +42,7 @@ export function Phase0Workbench({
     drafts,
     records.length,
   );
+  const inferredSourceExplanation = inferSourceExplanation(selectedRecord.rawText);
 
   function updateDraft(patch: Partial<Phase0Draft>) {
     setDrafts((current) =>
@@ -190,6 +192,7 @@ export function Phase0Workbench({
                       }
                     >
                       {option}
+                      {option === inferredSourceExplanation ? "（建議）" : ""}
                     </button>
                   ),
                 )}

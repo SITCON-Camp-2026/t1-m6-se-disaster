@@ -6,6 +6,7 @@ import {
   getDraftDetailOptions,
   getDraftSupportLabel,
   getPhase0SummaryStats,
+  inferSourceExplanation,
 } from "../src/features/phase-0/phase0-drafts";
 import { createPhase0Judgement } from "../src/features/phase-0/phase0-heuristics";
 
@@ -81,5 +82,11 @@ describe("phase 0 heuristics", () => {
     expect(stats.trustedCount).toBe(4);
     expect(stats.pendingCount).toBe(8);
     expect(stats.trustedCount + stats.pendingCount).toBe(messyReports.length);
+  });
+
+  it("infers source explanation from the record text", () => {
+    expect(inferSourceExplanation("志工在現場回報，說有人需要協助")).toBe("現場回報");
+    expect(inferSourceExplanation("有人打電話來說停電了")).toBe("電話");
+    expect(inferSourceExplanation("社群貼文轉錄，內容提到缺水")).toBe("社群轉錄");
   });
 });

@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
 import messyReports from "../src/fixtures/phase-0/messy-reports.json";
+import {
+  buildPhase0Drafts,
+  getDraftPersonnelLabel,
+  getDraftSupportLabel,
+} from "../src/features/phase-0/phase0-drafts";
 import { createPhase0Judgement } from "../src/features/phase-0/phase0-heuristics";
 
 describe("phase 0 heuristics", () => {
@@ -41,5 +46,27 @@ describe("phase 0 heuristics", () => {
 
     expect(judgement.possibleKind).toBe("unknown");
     expect(judgement.suggestedNextStep).toBe("send_to_human_review");
+  });
+
+  it("builds editable drafts with review, announcement, support, reliability, and notes", () => {
+    const drafts = buildPhase0Drafts(messyReports);
+
+    expect(drafts).toHaveLength(messyReports.length);
+    expect(drafts[0]?.needsHumanReview).toBe(true);
+    expect(drafts[5]?.needsAnnouncement).toBe(true);
+    expect(drafts[0]?.supportNeed).toBe("people");
+    expect(drafts[1]?.supportNeed).toBe("resources");
+    expect(getDraftSupportLabel("people")).toBe("人力");
+    expect(getDraftSupportLabel("power")).toBe("水電");
+    expect(getDraftSupportLabel("resources")).toBe("物資");
+    expect(getDraftSupportLabel("none")).toBe("無");
+    expect(["現場回報", "志工更新", "社群轉錄"]).toContain(
+      drafts[0]?.sourceExplanation,
+    );
+    expect(typeof drafts[0]?.confirmedInfo).toBe("string");
+    expect(typeof drafts[0]?.uncertainInfo).toBe("string");
+    expect(typeof drafts[0]?.personnelType).toBe("string");
+    expect(getDraftPersonnelLabel("inspection")).toBe("查核人員");
+    expect(getDraftPersonnelLabel("debris")).toBe("清泥人員");
   });
 });

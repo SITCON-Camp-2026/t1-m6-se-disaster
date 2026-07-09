@@ -245,6 +245,76 @@ button {
   margin-bottom: 8px;
 }
 
+.draft-editor {
+  border: 1px solid #dbe4ef;
+  border-radius: 8px;
+  padding: 16px;
+  background: #fbfcfe;
+  display: grid;
+  gap: 12px;
+}
+
+.draft-editor__header h3 {
+  margin: 0;
+}
+
+.draft-editor__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.draft-editor__choice-group {
+  display: grid;
+  gap: 6px;
+}
+
+.draft-editor__choice-group > span {
+  font-weight: 700;
+  color: #344054;
+}
+
+.draft-editor__field {
+  display: grid;
+  gap: 6px;
+}
+
+.draft-editor__field span {
+  font-weight: 700;
+  color: #344054;
+}
+
+.draft-editor__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.draft-editor__buttons button {
+  border: 1px solid #cfd8e3;
+  border-radius: 999px;
+  padding: 6px 10px;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.draft-editor__buttons button.active {
+  border-color: #245d9d;
+  background: #eef6ff;
+  color: #245d9d;
+}
+
+.draft-editor__field textarea {
+  border: 1px solid #cfd8e3;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font: inherit;
+  background: #ffffff;
+  resize: vertical;
+  min-height: 72px;
+}
+
+
 .judgement-card ul,
 .workbench__checklist ul {
   padding-left: 20px;

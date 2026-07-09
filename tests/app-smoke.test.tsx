@@ -1,8 +1,12 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { App } from "../src/app/App";
 
 describe("App", () => {
+  beforeEach(() => {
+    window.history.pushState({}, "", "/");
+  });
+
   it("renders starter title", () => {
     render(<App />);
     expect(screen.getByText("災害資訊整理工作台")).toBeInTheDocument();
@@ -102,5 +106,31 @@ describe("App", () => {
     expect(
       screen.queryByText(/已產生 \d+ 筆安全邊界草稿/),
     ).not.toBeInTheDocument();
+  });
+
+  it("links to the v1 action flow from the home page", () => {
+    render(<App />);
+
+    expect(
+      screen.getByRole("link", { name: "進入 v1 行動者確認流程" }),
+    ).toHaveAttribute("href", "./v1/");
+  });
+
+  it("renders the v1 action flow at the v1 route", () => {
+    window.history.pushState({}, "", "/v1/");
+
+    render(<App />);
+
+    expect(screen.getByText("去之前先確認")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "看內容摘要" }));
+    expect(
+      screen.getByRole("heading", { name: "看訊息來源與查核狀態" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "能不能直接行動？" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("資料仍來自 Phase 0 原始資訊", { exact: false }),
+    ).toBeInTheDocument();
   });
 });

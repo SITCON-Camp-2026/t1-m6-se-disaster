@@ -5,6 +5,7 @@ import { Phase0ActionLensPanel } from "../features/phase-0/Phase0ActionLensPanel
 import { Phase0RawInfoPanel } from "../features/phase-0/Phase0RawInfoPanel";
 import { Phase0Workbench } from "../features/phase-0/Phase0Workbench";
 import type { Phase0MessyRecord } from "../features/phase-0/phase0-types";
+import { V1ActionFlowPage } from "../features/v1/V1ActionFlowPage";
 
 type TabKey = "raw" | "workbench" | "actionLens";
 
@@ -17,6 +18,8 @@ const tabs: Array<{ key: TabKey; label: string }> = [
 const phase0Records = messyReports satisfies Phase0MessyRecord[];
 
 export function App() {
+  const currentPath = window.location.pathname;
+  const isV1Route = currentPath.endsWith("/v1") || currentPath.endsWith("/v1/");
   const [activeTab, setActiveTab] = useState<TabKey>("raw");
   const [selectedRecordId, setSelectedRecordId] = useState(
     phase0Records[0]?.id ?? "",
@@ -25,6 +28,10 @@ export function App() {
   function selectForWorkbench(recordId: string) {
     setSelectedRecordId(recordId);
     setActiveTab("workbench");
+  }
+
+  if (isV1Route) {
+    return <V1ActionFlowPage records={phase0Records} />;
   }
 
   return (
@@ -36,6 +43,9 @@ export function App() {
           第一階段先用 coding agent
           做出可展示的前端原型，再從成果中看見資料品質、角色、狀態與來源的限制。
         </p>
+        <a className="hero__link" href="./v1/">
+          進入 v1 行動者確認流程
+        </a>
       </header>
 
       <nav className="tabs" aria-label="第一階段工作區">

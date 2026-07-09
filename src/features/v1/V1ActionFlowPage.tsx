@@ -7,25 +7,90 @@ import {
   getManualPhase0ActivityStatus,
   phase0ActivityStatusOptions,
   type Phase0ActivityLevel,
-  type Phase0Credibility,
 } from "../phase-0/phase0-action-lens";
 
-type V1Filter = "executable" | "insufficient";
+type TaskCategoryId =
+  "medical" | "mud" | "electrician" | "logistics" | "fieldCheck";
 
-const credibleEnough: Phase0Credibility[] = ["高"];
+type TaskItem = {
+  categories: TaskCategoryId[];
+  lens: ReturnType<typeof createPhase0ActionLens>;
+  record: Phase0MessyRecord;
+};
 
-function canEnterActionCheck(credibility: Phase0Credibility) {
-  return credibleEnough.includes(credibility);
+const taskCategories: Array<{ id: TaskCategoryId; label: string }> = [
+  { id: "medical", label: "醫療" },
+  { id: "mud", label: "清泥人員" },
+  { id: "electrician", label: "水電工" },
+  { id: "logistics", label: "物資盤點或後勤人員" },
+  { id: "fieldCheck", label: "現場查核人員" },
+];
+
+function hasAny(text: string, patterns: RegExp[]) {
+  return patterns.some((pattern) => pattern.test(text));
 }
 
-function createChecklistItems(credibilityReasons: string[]) {
-  const missingItems = credibilityReasons
-    .filter((reason) => reason.startsWith("缺"))
-    .map((reason) => reason.replace("缺：有", "缺："));
+function getTaskCategories(record: Phase0MessyRecord): TaskCategoryId[] {
+  const text = record.rawText;
+  const categories: TaskCategoryId[] = [];
 
-  return missingItems.length > 0
-    ? missingItems
-    : ["五項行動線索都有提到，但仍要人工確認是否已過期或已有人處理。"];
+  if (hasAny(text, [/藥品|醫療|長者|親友|家屬/])) {
+    categories.push("medical");
+  }
+  if (hasAny(text, [/清泥|清淤/])) {
+    categories.push("mud");
+  }
+  if (hasAny(text, [/水電|檢修|停電|電力|工班/])) {
+    categories.push("electrician");
+  }
+  if (hasAny(text, [/雨鞋|飲用水|衣物|鏟子|物資|盤點|收|送/])) {
+    categories.push("logistics");
+  }
+  if (
+    hasAny(text, [
+      /地址|位置|地點|集合點|道路|封閉|入口|公告|服務台|現場|回報|確認|站|中心|老街口|A 區/,
+    ])
+  ) {
+    categories.push("fieldCheck");
+  }
+
+  return categories.length > 0 ? categories : ["fieldCheck"];
+}
+
+function createKnownDetails(record: Phase0MessyRecord) {
+  const text = record.rawText;
+  const details: string[] = [];
+  const locationMatches = [
+    "光復車站東側出口",
+    "光復車站",
+    "溪畔活動中心",
+    "大進路口服務台",
+    "大進路口",
+    "站前遮雨棚",
+    "學校側門",
+    "老街口",
+    "A 區",
+  ].filter((place) => text.includes(place));
+  const timeMatches = [
+    ...text.matchAll(/\d{1,2}:\d{2}/g),
+    ...text.matchAll(/中午前|下午|早上|下一次現場盤點預計/g),
+  ].map((match) => match[0]);
+  const quantityMatches = [
+    ...text.matchAll(/\d+\s*雙/g),
+    ...text.matchAll(/十幾個人|約剩\s*\d+\s*雙|尺寸多為\s*\d+-\d+/g),
+  ].map((match) => match[0]);
+
+  if (locationMatches.length > 0) {
+    details.push(`地點：${[...new Set(locationMatches)].join("、")}`);
+  }
+  if (timeMatches.length > 0) {
+    details.push(`時間：${[...new Set(timeMatches)].join("、")}`);
+  }
+  if (quantityMatches.length > 0) {
+    details.push(`數量或規格：${[...new Set(quantityMatches)].join("、")}`);
+  }
+
+  return details;
 }
 
 function createQuickTags(lens: ReturnType<typeof createPhase0ActionLens>) {
@@ -45,44 +110,6 @@ function createQuickTags(lens: ReturnType<typeof createPhase0ActionLens>) {
   }
 
   return tags.length > 0 ? tags.slice(0, 2) : ["待人工確認"];
-}
-
-function createActionConclusion({
-  hasEnoughClues,
-  statusLevel,
-}: {
-  hasEnoughClues: boolean;
-  statusLevel: Phase0ActivityLevel;
-}) {
-  if (!hasEnoughClues) {
-    return {
-      tone: "wait",
-      title: "目前不適合前往",
-      body: "這筆原始資訊不足以判斷要不要去；請先補齊缺少的地點、時間、規格或人員資訊。",
-    };
-  }
-
-  if (statusLevel === "blocked") {
-    return {
-      tone: "stop",
-      title: "先不要去，避免重複或白跑",
-      body: "原文出現停止、限制或可能已有人處理的訊號。請先確認限制原因與承接狀態。",
-    };
-  }
-
-  if (statusLevel === "active") {
-    return {
-      tone: "check",
-      title: "先確認是否正在處理",
-      body: "資訊足以進入行動判斷，但仍要先確認現場是否已有人前往或正在更新狀態。",
-    };
-  }
-
-  return {
-    tone: "check",
-    title: "可做下一步判斷，但不要直接出發",
-    body: "原文線索較完整，可以用來判斷下一步；仍需先確認是否已有人承接與現場狀態。",
-  };
 }
 
 export function V1ActionFlowPage({
@@ -113,42 +140,29 @@ export function V1ActionFlowPanel({
 }: {
   records: Phase0MessyRecord[];
 }) {
-  const [activeFilter, setActiveFilter] = useState<V1Filter>("executable");
-  const [selectedRecordId, setSelectedRecordId] = useState(
-    records[0]?.id ?? "",
-  );
+  const [activeCategory, setActiveCategory] = useState<TaskCategoryId>("mud");
   const [activityLevels, setActivityLevels] = useState<
     Record<string, Phase0ActivityLevel>
   >({});
-  const [supplementNotes, setSupplementNotes] = useState<
-    Record<string, string>
+  const [acceptedRecordId, setAcceptedRecordId] = useState<string | null>(null);
+  const [completedRecordIds, setCompletedRecordIds] = useState<
+    Record<string, boolean>
   >({});
 
   const recordItems = useMemo(
     () =>
       records.map((record) => ({
+        categories: getTaskCategories(record),
         lens: createPhase0ActionLens(record),
         record,
       })),
     [records],
   );
-  const executableCount = recordItems.filter(
-    (item) => item.lens.credibility === "高",
-  ).length;
-  const insufficientCount = recordItems.length - executableCount;
   const visibleItems = recordItems.filter((item) =>
-    activeFilter === "executable"
-      ? item.lens.credibility === "高"
-      : item.lens.credibility !== "高",
+    item.categories.includes(activeCategory),
   );
-  const selectedItem =
-    visibleItems.find((item) => item.record.id === selectedRecordId) ??
-    visibleItems[0] ??
-    recordItems[0];
-  const selectedRecord = selectedItem?.record;
-  const lens = selectedItem?.lens;
 
-  if (!selectedRecord || !lens) {
+  if (recordItems.length === 0) {
     return (
       <section className="panel">
         <p>目前沒有原始資訊可以確認。</p>
@@ -156,260 +170,171 @@ export function V1ActionFlowPanel({
     );
   }
 
-  const manualActivityStatus = activityLevels[selectedRecord.id]
-    ? getManualPhase0ActivityStatus(activityLevels[selectedRecord.id])
-    : lens.activityStatus;
-  const hasEnoughClues = canEnterActionCheck(lens.credibility);
-  const actionConclusion = createActionConclusion({
-    hasEnoughClues,
-    statusLevel: manualActivityStatus.level,
-  });
-  const missingChecklist = createChecklistItems(lens.credibilityReasons);
-  const isExecutableRecord = lens.credibility === "高";
-
   return (
     <section className="v1-workspace">
       <div className="v1-workspace__header">
         <div>
-          <h2>行動者判讀</h2>
+          <h2>查看任務</h2>
           <p>
-            先分出可行動判斷度高的資料；不足的資料先補時間、地點、數量或現場狀態。
+            依需要的人力資源分組。每筆任務仍是原始資訊判讀，不代表正式派工。
           </p>
         </div>
-        <div className="v1-hero__actions" aria-label="資料分類">
-          <div className="v1-filter-buttons">
-            <button
-              className={activeFilter === "executable" ? "active" : ""}
-              type="button"
-              onClick={() => setActiveFilter("executable")}
-            >
-              可執行區
-              <strong>{executableCount}</strong>
-            </button>
-            <button
-              className={activeFilter === "insufficient" ? "active" : ""}
-              type="button"
-              onClick={() => setActiveFilter("insufficient")}
-            >
-              資料不足區
-              <strong>{insufficientCount}</strong>
-            </button>
-          </div>
+        <div className="v1-task-note">
+          接案和回報只存在本機，不會通知任何人。
         </div>
       </div>
 
-      <section className="v1-layout" aria-label="v1 行動者確認">
-        <aside className="v1-list" aria-label="選擇原始資訊">
-          <div className="v1-list__header">
-            <h2>原始資訊</h2>
-            <span>{visibleItems.length} 筆</span>
-          </div>
-          {visibleItems.map(({ lens: itemLens, record }) => (
-            <RecordPickerButton
-              isActive={record.id === selectedRecord.id}
-              key={record.id}
-              lens={itemLens}
-              onSelect={() => setSelectedRecordId(record.id)}
-              record={record}
-            />
-          ))}
-        </aside>
+      <nav className="v1-category-tabs" aria-label="依人力資源篩選任務">
+        {taskCategories.map((category) => {
+          const count = recordItems.filter((item) =>
+            item.categories.includes(category.id),
+          ).length;
 
-        <section className="v1-flow" aria-label="行動者確認流程">
-          <article
-            className={`v1-action-summary v1-action-summary--${actionConclusion.tone}`}
-          >
-            <div>
-              <p className="eyebrow">最重要判斷</p>
-              <h2>{actionConclusion.title}</h2>
-              <p>{actionConclusion.body}</p>
-            </div>
-            <div className="v1-readiness">
-              <span>可行動判斷度</span>
-              <strong>{lens.credibility}</strong>
-              <p>代表是否足夠判斷要不要去，不代表已查核。</p>
-            </div>
-          </article>
+          return (
+            <button
+              className={activeCategory === category.id ? "active" : ""}
+              key={category.id}
+              type="button"
+              onClick={() => setActiveCategory(category.id)}
+            >
+              <span>{category.label}</span>
+              <strong>{count}</strong>
+            </button>
+          );
+        })}
+      </nav>
 
-          <article className="v1-step">
-            <span className="v1-step__number">1</span>
-            <div>
-              <h2>看內容摘要</h2>
-              <p>{lens.summary}</p>
-            </div>
-          </article>
-
-          <article className="v1-step">
-            <span className="v1-step__number">2</span>
-            <div>
-              <h2>看訊息來源與查核狀態</h2>
-              <div className="v1-inline-facts">
-                <SourceLabel sourceType={selectedRecord.sourceType} />
-                <StatusBadge status={selectedRecord.verificationStatus} />
-                <span>更新時間：{selectedRecord.updatedAt}</span>
-              </div>
-              <p className="v1-note">
-                來源只代表資訊怎麼進來，查核狀態仍不能被當成真實承接或正式派工。
-              </p>
-            </div>
-          </article>
-
-          <article className="v1-step v1-step--decision">
-            <span className="v1-step__number">3</span>
-            <div>
-              <h2>可行動判斷說明</h2>
-              <p className="v1-decision">
-                {hasEnoughClues
-                  ? "線索較多，但仍不能直接前往；請先判斷是否可能已有人處理。"
-                  : "線索不足，不能用來決定前往；請先補確認。"}
-              </p>
-              <p className="v1-note">
-                判斷度來自原文是否交代需求、規格、地點、時間與需要的人；它只協助判斷下一步，不代表已查核。
-              </p>
-            </div>
-          </article>
-
-          {!hasEnoughClues ? (
-            <article className="v1-branch v1-branch--warning v1-next-step">
-              <h2>否：需要人工確認，先不要前往</h2>
-              <ul>
-                {lens.riskReasons.map((reason) => (
-                  <li key={reason}>{reason}</li>
-                ))}
-              </ul>
-              <p>留下判斷紀錄：先確認缺少資訊。</p>
-            </article>
-          ) : (
-            <>
-              <article className="v1-step v1-step--status">
-                <span className="v1-step__number">4</span>
-                <div>
-                  <h2>是否可能已有人處理？</h2>
-                  <p className="v1-note">
-                    這只是本機判讀，不會通知任何人，也不是正式派工或承接狀態。
-                  </p>
-                  <label className="v1-status-select">
-                    <span>目前狀態</span>
-                    <select
-                      aria-label="v1 目前狀態"
-                      value={manualActivityStatus.level}
-                      onChange={(event) =>
-                        setActivityLevels((current) => ({
-                          ...current,
-                          [selectedRecord.id]: event.target
-                            .value as Phase0ActivityLevel,
-                        }))
-                      }
-                    >
-                      {phase0ActivityStatusOptions.map((option) => (
-                        <option key={option.level} value={option.level}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <p>{manualActivityStatus.evidence}</p>
-                </div>
-              </article>
-
-              <article
-                className={
-                  manualActivityStatus.level === "blocked"
-                    ? "v1-branch v1-branch--stop v1-next-step"
-                    : "v1-branch v1-next-step"
-                }
-              >
-                <h2>
-                  {manualActivityStatus.level === "blocked"
-                    ? "是：已有人處理，先不要去"
-                    : "否：尚未回報或疑似處理中"}
-                </h2>
-                <p>{lens.nextStep}</p>
-                <p>留下判斷紀錄：確認下一步前，仍要人工查核來源與現場狀態。</p>
-              </article>
-            </>
-          )}
-        </section>
-
-        <aside className="v1-side-panel" aria-label="行動者補確認資訊">
-          <section>
-            <h2>需要補確認</h2>
-            <ul>
-              {missingChecklist.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          </section>
-
-          <section>
-            <h2>可能需要的人</h2>
-            <div className="v1-chip-list">
-              {lens.neededPeople.map((personType) => (
-                <span key={personType}>{personType}</span>
-              ))}
-            </div>
-          </section>
-
-          {!isExecutableRecord ? (
-            <section>
-              <h2>補充資訊</h2>
-              <label className="v1-supplement">
-                <span>
-                  如果知道新的時間、地點、數量或現場狀態，可以先記在這裡。
-                </span>
-                <textarea
-                  aria-label="補充資訊"
-                  placeholder="例：新的盤點時間、比較明確的集合點、已有人回報處理..."
-                  value={supplementNotes[selectedRecord.id] ?? ""}
-                  onChange={(event) =>
-                    setSupplementNotes((current) => ({
-                      ...current,
-                      [selectedRecord.id]: event.target.value,
-                    }))
-                  }
-                />
-              </label>
-              <p className="v1-note">這只是本機草稿，不會同步或送出。</p>
-            </section>
-          ) : null}
-        </aside>
+      <section className="v1-task-grid" aria-label="查看任務">
+        {visibleItems.map((item) => (
+          <TaskCard
+            activityStatusLevel={activityLevels[item.record.id]}
+            acceptedRecordId={acceptedRecordId}
+            completed={Boolean(completedRecordIds[item.record.id])}
+            item={item}
+            key={item.record.id}
+            onAccept={() => {
+              setAcceptedRecordId(item.record.id);
+              setActivityLevels((current) => ({
+                ...current,
+                [item.record.id]: "blocked",
+              }));
+            }}
+            onActivityStatusChange={(level) =>
+              setActivityLevels((current) => ({
+                ...current,
+                [item.record.id]: level,
+              }))
+            }
+            onComplete={() =>
+              setCompletedRecordIds((current) => ({
+                ...current,
+                [item.record.id]: true,
+              }))
+            }
+          />
+        ))}
       </section>
     </section>
   );
 }
 
-function RecordPickerButton({
-  isActive,
-  lens,
-  onSelect,
-  record,
+function TaskCard({
+  acceptedRecordId,
+  activityStatusLevel,
+  completed,
+  item,
+  onAccept,
+  onActivityStatusChange,
+  onComplete,
 }: {
-  isActive: boolean;
-  lens: ReturnType<typeof createPhase0ActionLens>;
-  onSelect: () => void;
-  record: Phase0MessyRecord;
+  acceptedRecordId: string | null;
+  activityStatusLevel?: Phase0ActivityLevel;
+  completed: boolean;
+  item: TaskItem;
+  onAccept: () => void;
+  onActivityStatusChange: (level: Phase0ActivityLevel) => void;
+  onComplete: () => void;
 }) {
+  const { lens, record } = item;
+  const activityStatus = activityStatusLevel
+    ? getManualPhase0ActivityStatus(activityStatusLevel)
+    : lens.activityStatus;
   const tags = createQuickTags(lens);
+  const knownDetails = createKnownDetails(record);
+  const accepted = acceptedRecordId === record.id;
+  const cannotAccept = activityStatus.level === "blocked" || completed;
 
   return (
-    <button
-      className={isActive ? "active" : ""}
-      type="button"
-      onClick={onSelect}
+    <article
+      className={completed ? "v1-task-card v1-task-card--done" : "v1-task-card"}
     >
-      <span className="v1-list__record-title">
-        <strong>{record.id}</strong>
-        <span>判斷度：{lens.credibility}</span>
-      </span>
-      <span className="v1-list__summary">{record.rawText}</span>
-      <span className="v1-list__meta">
+      <header className="v1-task-card__header">
+        <div>
+          <p className="eyebrow">{record.id}</p>
+          <h3>{completed ? "已回報處理" : activityStatus.label}</h3>
+        </div>
+        <span className="v1-readiness-pill">判斷度：{lens.credibility}</span>
+      </header>
+
+      <p className="v1-task-card__content">{record.rawText}</p>
+
+      <div className="v1-task-card__meta">
+        <SourceLabel sourceType={record.sourceType} />
         <StatusBadge status={record.verificationStatus} />
         {tags.map((tag) => (
           <span className="v1-mini-tag" key={tag}>
             {tag}
           </span>
         ))}
-      </span>
-    </button>
+      </div>
+
+      <label className="v1-status-select">
+        <span>狀態</span>
+        <select
+          aria-label={`${record.id} 狀態`}
+          value={activityStatus.level}
+          onChange={(event) =>
+            onActivityStatusChange(event.target.value as Phase0ActivityLevel)
+          }
+        >
+          {phase0ActivityStatusOptions.map((option) => (
+            <option key={option.level} value={option.level}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <div className="v1-task-card__actions">
+        <button disabled={cannotAccept} type="button" onClick={onAccept}>
+          接案
+        </button>
+        {activityStatus.level === "blocked" ? (
+          <small>已經有人去處理囉～</small>
+        ) : null}
+      </div>
+
+      {accepted ? (
+        <section
+          className="v1-accept-panel"
+          aria-label={`${record.id} 接案資訊`}
+        >
+          <h4>接案資訊</h4>
+          {knownDetails.length > 0 ? (
+            <ul>
+              {knownDetails.map((detail) => (
+                <li key={detail}>{detail}</li>
+              ))}
+            </ul>
+          ) : (
+            <p>目前原文沒有可直接列出的地點、時間或數量。</p>
+          )}
+          <p>{lens.nextStep}</p>
+          <button disabled={completed} type="button" onClick={onComplete}>
+            回報已處理
+          </button>
+        </section>
+      ) : null}
+    </article>
   );
 }

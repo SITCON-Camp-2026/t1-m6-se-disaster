@@ -46,6 +46,9 @@
 | 2026-07-09 | Release 03 | 調整 v1 行動判讀  | 將「可信度」改為「可行動判斷度」，並把五項判準改為背後依據，不再逐條顯示；版面先顯示最重要判斷與補確認事項   | 採用但保留警示       | 使用者希望此分數能協助判斷要不要去；畫面需說明它不代表已查核，也不重複列出下一步已涵蓋的風險 | `src/features/v1/V1ActionFlowPage.tsx`, `src/features/phase-0/Phase0ActionLensCard.tsx`           |
 | 2026-07-09 | Release 03 | v1 分類與補充欄位 | 在 `/v1/` 右上加入可執行區與資料不足區統計按鈕，並讓資料不足區可以填本機補充資訊                             | 採用但保留本機標示   | 行動者需要先分出高判斷度資料；補充欄位只作為本機草稿，不代表正式更新或同步現場狀態           | `src/features/v1/V1ActionFlowPage.tsx`, `src/styles/global.css`, `tests/app-smoke.test.tsx`       |
 | 2026-07-09 | Release 03 | 整合行動者入口    | 移除首頁的 v1 入口連結，將 v1 行動者確認流程直接放進「行動者判讀」分頁                                       | 採用                 | 使用者希望行動者不用另外跳頁；首頁仍保留 Phase 0 分頁結構，行動判讀分頁顯示最新版流程        | `src/app/App.tsx`, `src/features/v1/V1ActionFlowPage.tsx`, `tests/app-smoke.test.tsx`             |
+| 2026-07-09 | Release 03 | 任務看板版本      | 將行動者判讀改成依人力資源分類的任務看板，加入接案與回報已處理按鈕                                           | 採用但保留本機標示   | 這是另一個版面方向；接案與回報只在本機顯示，不代表正式派工、同步或真實完成                   | `src/features/v1/V1ActionFlowPage.tsx`, `src/styles/global.css`, `tests/app-smoke.test.tsx`       |
+| 2026-07-09 | Release 03 | 接案狀態切換      | 接案後自動將該筆狀態切成「已有人處理，先不要去」，並讓接案按鈕不可再按                                       | 採用                 | 使用者希望接案後能立刻避免其他行動者重複接同一筆；此狀態仍只存在本機示範                     | `src/features/v1/V1ActionFlowPage.tsx`, `tests/app-smoke.test.tsx`                                |
+| 2026-07-09 | Release 03 | 任務看板流程圖    | 將 `docs/flow.md` 流程圖更新成查看任務、依人力分類、接案、回報已處理的流程                                   | 採用                 | 流程文件需要跟目前行動者判讀畫面一致，同時保留不是正式派工或真實完成的提醒                   | `docs/flow.md`                                                                                    |
 
 ## 課後反思
 

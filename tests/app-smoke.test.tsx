@@ -57,18 +57,14 @@ describe("App", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "行動者判讀" }));
 
+    expect(screen.getByText("查看任務")).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: "行動者判讀", level: 2 }),
-    ).toBeInTheDocument();
-    expect(screen.getByText("可行動判斷度")).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /可執行區/ }),
+      screen.getByRole("button", { name: /清泥人員/ }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /資料不足區/ }),
+      screen.getByRole("button", { name: /現場查核人員/ }),
     ).toBeInTheDocument();
-    expect(screen.getByText("可能需要的人")).toBeInTheDocument();
-    expect(screen.getByText("可行動判斷說明")).toBeInTheDocument();
+    expect(screen.getAllByText(/判斷度：/).length).toBeGreaterThan(0);
     expect(
       screen.queryByText("有：有提到需求或缺什麼物資"),
     ).not.toBeInTheDocument();
@@ -78,13 +74,15 @@ describe("App", () => {
     render(<App />);
 
     fireEvent.click(screen.getByRole("button", { name: "行動者判讀" }));
-    fireEvent.change(screen.getByRole("combobox", { name: "v1 目前狀態" }), {
+    fireEvent.change(screen.getByRole("combobox", { name: "M-001 狀態" }), {
       target: { value: "blocked" },
     });
 
-    expect(screen.getByRole("combobox", { name: "v1 目前狀態" })).toHaveValue(
+    expect(screen.getByRole("combobox", { name: "M-001 狀態" })).toHaveValue(
       "blocked",
     );
+    expect(screen.getAllByRole("button", { name: "接案" })[0]).toBeDisabled();
+    expect(screen.getAllByText("已經有人去處理囉～").length).toBeGreaterThan(0);
     expect(screen.queryByText("行動提醒")).not.toBeInTheDocument();
   });
 
@@ -125,40 +123,32 @@ describe("App", () => {
     render(<App />);
 
     expect(screen.getByText("去之前先確認")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "看內容摘要" }));
+    expect(screen.getByText("查看任務")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /醫療/ })).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: "看訊息來源與查核狀態" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { name: "可行動判斷說明" }),
-    ).toBeInTheDocument();
-    expect(screen.getByText("最重要判斷")).toBeInTheDocument();
-    expect(screen.getByText("可行動判斷度")).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /可執行區/ }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /資料不足區/ }),
+      screen.getByRole("button", { name: /物資盤點或後勤人員/ }),
     ).toBeInTheDocument();
     expect(
       screen.getByText("資料仍來自 Phase 0 原始資訊", { exact: false }),
     ).toBeInTheDocument();
   });
 
-  it("filters v1 records and shows a supplement field for insufficient data", () => {
+  it("lets action takers accept and report a task as handled", () => {
     window.history.pushState({}, "", "/v1/");
 
     render(<App />);
 
-    fireEvent.click(screen.getByRole("button", { name: /資料不足區/ }));
+    fireEvent.click(screen.getAllByRole("button", { name: "接案" })[0]);
 
-    expect(screen.getByText("補充資訊")).toBeInTheDocument();
-    expect(screen.getByRole("textbox", { name: "補充資訊" })).toHaveValue("");
-    fireEvent.change(screen.getByRole("textbox", { name: "補充資訊" }), {
-      target: { value: "補充：現場更新時間待確認" },
-    });
-    expect(screen.getByRole("textbox", { name: "補充資訊" })).toHaveValue(
-      "補充：現場更新時間待確認",
+    expect(screen.getByText("接案資訊")).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "M-001 狀態" })).toHaveValue(
+      "blocked",
     );
+    expect(screen.getAllByRole("button", { name: "接案" })[0]).toBeDisabled();
+    expect(screen.getByRole("button", { name: "回報已處理" })).toBeEnabled();
+
+    fireEvent.click(screen.getByRole("button", { name: "回報已處理" }));
+
+    expect(screen.getByText("已回報處理")).toBeInTheDocument();
   });
 });

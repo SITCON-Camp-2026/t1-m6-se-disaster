@@ -179,7 +179,7 @@ export function Phase0Workbench({
             <div className="draft-editor__field">
               <span>來源說明</span>
               <div className="draft-editor__buttons">
-                {(["現場回報", "志工更新", "社群轉錄"] as const).map(
+                {(["現場回報", "志工更新", "社群轉錄", "電話"] as const).map(
                   (option) => (
                     <button
                       key={option}

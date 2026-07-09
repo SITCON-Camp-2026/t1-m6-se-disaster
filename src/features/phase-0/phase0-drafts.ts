@@ -15,7 +15,8 @@ export type Phase0Reliability = "high" | "medium" | "low";
 export type Phase0SourceExplanation =
   | "現場回報"
   | "志工更新"
-  | "社群轉錄";
+  | "社群轉錄"
+  | "電話";
 
 export type Phase0Draft = {
   recordId: string;

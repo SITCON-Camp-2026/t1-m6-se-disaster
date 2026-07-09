@@ -38,11 +38,11 @@ export function Phase0Workbench({
     [drafts, selectedRecord.id],
   );
 
-  const { trustedCount, pendingCount, totalMissionCount } = getPhase0SummaryStats(
-    drafts,
-    records.length,
+  const { trustedCount, pendingCount, totalMissionCount } =
+    getPhase0SummaryStats(drafts, records.length);
+  const inferredSourceExplanation = inferSourceExplanation(
+    selectedRecord.rawText,
   );
-  const inferredSourceExplanation = inferSourceExplanation(selectedRecord.rawText);
 
   function updateDraft(patch: Partial<Phase0Draft>) {
     setDrafts((current) =>
@@ -58,7 +58,9 @@ export function Phase0Workbench({
         <div className="workbench__intro-top">
           <div>
             <p className="eyebrow">整理工作台</p>
-            <h2>第一階段的成功不是分類正確，而是把為什麼現在還不能判斷說清楚。</h2>
+            <h2>
+              第一階段的成功不是分類正確，而是把為什麼現在還不能判斷說清楚。
+            </h2>
             <p>
               這裡先只標示安全邊界，真正的候選判斷要由小組和 coding agent
               補上；這不是 runtime LLM 分析，也不是正式資料模型。
@@ -119,7 +121,9 @@ export function Phase0Workbench({
                 <select
                   value={selectedDraft?.needsHumanReview ? "yes" : "no"}
                   onChange={(event) =>
-                    updateDraft({ needsHumanReview: event.target.value === "yes" })
+                    updateDraft({
+                      needsHumanReview: event.target.value === "yes",
+                    })
                   }
                 >
                   <option value="yes">是</option>
@@ -132,7 +136,9 @@ export function Phase0Workbench({
                 <select
                   value={selectedDraft?.supportNeed ?? "none"}
                   onChange={(event) =>
-                    updateDraft({ supportNeed: event.target.value as Phase0SupportNeed })
+                    updateDraft({
+                      supportNeed: event.target.value as Phase0SupportNeed,
+                    })
                   }
                 >
                   {(["people", "power", "resources", "none"] as const).map(
@@ -150,16 +156,19 @@ export function Phase0Workbench({
                 <select
                   value={selectedDraft?.resourceDetailType ?? "none"}
                   onChange={(event) =>
-                    updateDraft({ resourceDetailType: event.target.value as Phase0ResourceDetailType })
+                    updateDraft({
+                      resourceDetailType: event.target
+                        .value as Phase0ResourceDetailType,
+                    })
                   }
                 >
-                  {getDraftDetailOptions(selectedDraft?.supportNeed ?? "none").map(
-                    (option) => (
-                      <option key={option} value={option}>
-                        {getDraftDetailLabel(option)}
-                      </option>
-                    ),
-                  )}
+                  {getDraftDetailOptions(
+                    selectedDraft?.supportNeed ?? "none",
+                  ).map((option) => (
+                    <option key={option} value={option}>
+                      {getDraftDetailLabel(option)}
+                    </option>
+                  ))}
                 </select>
               </label>
 
@@ -168,7 +177,9 @@ export function Phase0Workbench({
                 <select
                   value={selectedDraft?.reliability ?? "medium"}
                   onChange={(event) =>
-                    updateDraft({ reliability: event.target.value as Phase0Reliability })
+                    updateDraft({
+                      reliability: event.target.value as Phase0Reliability,
+                    })
                   }
                 >
                   <option value="high">高</option>
@@ -186,9 +197,15 @@ export function Phase0Workbench({
                     <button
                       key={option}
                       type="button"
-                      className={selectedDraft?.sourceExplanation === option ? "active" : ""}
+                      className={
+                        selectedDraft?.sourceExplanation === option
+                          ? "active"
+                          : ""
+                      }
                       onClick={() =>
-                        updateDraft({ sourceExplanation: option as Phase0SourceExplanation })
+                        updateDraft({
+                          sourceExplanation: option as Phase0SourceExplanation,
+                        })
                       }
                     >
                       {option}
@@ -205,7 +222,9 @@ export function Phase0Workbench({
                 rows={3}
                 value={selectedDraft?.confirmedInfo ?? ""}
                 placeholder="例如：目前已知雨鞋還剩 12 雙、飲用水暫時不缺。"
-                onChange={(event) => updateDraft({ confirmedInfo: event.target.value })}
+                onChange={(event) =>
+                  updateDraft({ confirmedInfo: event.target.value })
+                }
               />
             </label>
 
@@ -215,7 +234,9 @@ export function Phase0Workbench({
                 rows={3}
                 value={selectedDraft?.uncertainInfo ?? ""}
                 placeholder="例如：目前還不確定是否需要再派人，或地點是否準確。"
-                onChange={(event) => updateDraft({ uncertainInfo: event.target.value })}
+                onChange={(event) =>
+                  updateDraft({ uncertainInfo: event.target.value })
+                }
               />
             </label>
 
@@ -225,7 +246,9 @@ export function Phase0Workbench({
                 rows={3}
                 value={selectedDraft?.nextStep ?? ""}
                 placeholder="例如：先確認現場狀況，或先公告給志工。"
-                onChange={(event) => updateDraft({ nextStep: event.target.value })}
+                onChange={(event) =>
+                  updateDraft({ nextStep: event.target.value })
+                }
               />
             </label>
           </section>

@@ -13,10 +13,7 @@ export type Phase0ResourceDetailType =
   | "none";
 export type Phase0Reliability = "high" | "medium" | "low";
 export type Phase0SourceExplanation =
-  | "現場回報"
-  | "志工更新"
-  | "社群轉錄"
-  | "電話";
+  "現場回報" | "志工更新" | "社群轉錄" | "電話";
 
 export type Phase0Draft = {
   recordId: string;
@@ -44,7 +41,9 @@ export function getDraftSupportLabel(supportNeed: Phase0SupportNeed) {
   }
 }
 
-export function getDraftDetailLabel(resourceDetailType: Phase0ResourceDetailType) {
+export function getDraftDetailLabel(
+  resourceDetailType: Phase0ResourceDetailType,
+) {
   switch (resourceDetailType) {
     case "medical":
       return "醫療人員";
@@ -74,17 +73,25 @@ export function getDraftDetailLabel(resourceDetailType: Phase0ResourceDetailType
 export function getDraftDetailOptions(supportNeed: Phase0SupportNeed) {
   switch (supportNeed) {
     case "people":
-      return (["inspection", "medical", "debris", "logistics", "general"] as const);
+      return [
+        "inspection",
+        "medical",
+        "debris",
+        "logistics",
+        "general",
+      ] as const;
     case "power":
-      return (["electricity"] as const);
+      return ["electricity"] as const;
     case "resources":
-      return (["water", "boots", "medicine", "food"] as const);
+      return ["water", "boots", "medicine", "food"] as const;
     case "none":
-      return (["none"] as const);
+      return ["none"] as const;
   }
 }
 
-export function inferSourceExplanation(rawText: string): Phase0SourceExplanation {
+export function inferSourceExplanation(
+  rawText: string,
+): Phase0SourceExplanation {
   const normalized = rawText.toLowerCase();
 
   if (/電話|打電話|通話|call/.test(normalized)) {
@@ -103,14 +110,32 @@ export function inferSourceExplanation(rawText: string): Phase0SourceExplanation
 }
 
 export function buildPhase0Drafts(
-  records: Array<{ id: string; sourceType: string; updatedAt: string; rawText?: string }>,
+  records: Array<{
+    id: string;
+    sourceType: string;
+    updatedAt: string;
+    rawText?: string;
+  }>,
 ): Phase0Draft[] {
   return records.map((record, index) => ({
     recordId: record.id,
     needsHumanReview: index % 2 === 0,
     needsAnnouncement: index === 5,
     supportNeed: (["people", "resources", "power", "none"] as const)[index % 4],
-    resourceDetailType: (["inspection", "medical", "debris", "general", "water", "boots", "medicine", "food", "electricity", "none"] as const)[index % 10],
+    resourceDetailType: (
+      [
+        "inspection",
+        "medical",
+        "debris",
+        "general",
+        "water",
+        "boots",
+        "medicine",
+        "food",
+        "electricity",
+        "none",
+      ] as const
+    )[index % 10],
     reliability: (["low", "medium", "high"] as const)[index % 3],
     sourceExplanation: inferSourceExplanation(record.rawText ?? ""),
     confirmedInfo: "請寫出這筆資訊中已知且較確定的內容。",
@@ -119,8 +144,13 @@ export function buildPhase0Drafts(
   }));
 }
 
-export function getPhase0SummaryStats(drafts: Phase0Draft[], totalMissionCount: number) {
-  const trustedCount = drafts.filter((draft) => draft.reliability === "high").length;
+export function getPhase0SummaryStats(
+  drafts: Phase0Draft[],
+  totalMissionCount: number,
+) {
+  const trustedCount = drafts.filter(
+    (draft) => draft.reliability === "high",
+  ).length;
   const pendingCount = Math.max(0, totalMissionCount - trustedCount);
 
   return {

@@ -163,8 +163,42 @@ button {
   font-size: 1.25rem;
 }
 
+.workbench__intro-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
 .workbench__intro p:last-child {
   margin-bottom: 0;
+}
+
+.workbench__stats {
+  display: flex;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.workbench__stat-card {
+  min-width: 96px;
+  border: 1px solid #dbe4ef;
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: #ffffff;
+  display: grid;
+  gap: 3px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.workbench__stat-label {
+  font-size: 0.8rem;
+  color: #667085;
+}
+
+.workbench__stat-card strong {
+  font-size: 1.2rem;
+  color: #102a43;
 }
 
 .workbench__layout {
@@ -313,7 +347,6 @@ button {
   resize: vertical;
   min-height: 72px;
 }
-
 
 .judgement-card ul,
 .workbench__checklist ul {

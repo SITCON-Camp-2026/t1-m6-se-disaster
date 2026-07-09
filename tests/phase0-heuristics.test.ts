@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import messyReports from "../src/fixtures/phase-0/messy-reports.json";
 import {
   buildPhase0Drafts,
-  getDraftPersonnelLabel,
+  getDraftDetailLabel,
+  getDraftDetailOptions,
   getDraftSupportLabel,
   getPhase0SummaryStats,
 } from "../src/features/phase-0/phase0-drafts";
@@ -66,9 +67,11 @@ describe("phase 0 heuristics", () => {
     );
     expect(typeof drafts[0]?.confirmedInfo).toBe("string");
     expect(typeof drafts[0]?.uncertainInfo).toBe("string");
-    expect(typeof drafts[0]?.personnelType).toBe("string");
-    expect(getDraftPersonnelLabel("inspection")).toBe("查核人員");
-    expect(getDraftPersonnelLabel("debris")).toBe("清泥人員");
+    expect(typeof drafts[0]?.resourceDetailType).toBe("string");
+    expect(getDraftDetailLabel("inspection")).toBe("查核人員");
+    expect(getDraftDetailLabel("debris")).toBe("清泥人員");
+    expect(getDraftDetailOptions("resources")).toContain("water");
+    expect(getDraftDetailOptions("people")).toContain("inspection");
   });
 
   it("derives trusted and pending summary counts from reliability", () => {

@@ -4,11 +4,12 @@ import { StatusBadge } from "../../components/StatusBadge";
 import { Phase0JudgementCard } from "./Phase0JudgementCard";
 import {
   buildPhase0Drafts,
-  getDraftPersonnelLabel,
+  getDraftDetailLabel,
+  getDraftDetailOptions,
   getDraftSupportLabel,
   getPhase0SummaryStats,
   type Phase0Draft,
-  type Phase0PersonnelType,
+  type Phase0ResourceDetailType,
   type Phase0Reliability,
   type Phase0SourceExplanation,
   type Phase0SupportNeed,
@@ -143,17 +144,17 @@ export function Phase0Workbench({
               </label>
 
               <label className="draft-editor__choice-group">
-                <span>人力種類需求</span>
+                <span>需求細項</span>
                 <select
-                  value={selectedDraft?.personnelType ?? "none"}
+                  value={selectedDraft?.resourceDetailType ?? "none"}
                   onChange={(event) =>
-                    updateDraft({ personnelType: event.target.value as Phase0PersonnelType })
+                    updateDraft({ resourceDetailType: event.target.value as Phase0ResourceDetailType })
                   }
                 >
-                  {(["medical", "inspection", "debris", "logistics", "general", "none"] as const).map(
+                  {getDraftDetailOptions(selectedDraft?.supportNeed ?? "none").map(
                     (option) => (
                       <option key={option} value={option}>
-                        {getDraftPersonnelLabel(option)}
+                        {getDraftDetailLabel(option)}
                       </option>
                     ),
                   )}

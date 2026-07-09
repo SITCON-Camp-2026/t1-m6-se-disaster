@@ -18,6 +18,9 @@ describe("App", () => {
       screen.getByRole("button", { name: "整理工作台" }),
     ).toBeInTheDocument();
     expect(
+      screen.getByRole("button", { name: "行動者判讀" }),
+    ).toBeInTheDocument();
+    expect(
       screen.queryByRole("button", { name: "通報" }),
     ).not.toBeInTheDocument();
     expect(
@@ -43,6 +46,48 @@ describe("App", () => {
     ).toBeInTheDocument();
     expect(screen.getAllByText("待人工確認").length).toBeGreaterThan(0);
     expect(screen.getAllByText("未查核").length).toBeGreaterThan(0);
+  });
+
+  it("shows an action-taker lens without claiming ownership is confirmed", () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: "行動者判讀" }));
+
+    expect(
+      screen.getByRole("heading", { name: "行動者判讀", level: 2 }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("需要的人員種類：")).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "目前狀態" })).toHaveValue(
+      "reported",
+    );
+    expect(screen.getByText("訊息來源：")).toBeInTheDocument();
+    expect(screen.getByText("社群轉錄")).toBeInTheDocument();
+    expect(screen.getByText("目前風險與可信度原因")).toBeInTheDocument();
+    expect(screen.getByText("有：有提到需求或缺什麼物資")).toBeInTheDocument();
+    expect(screen.getByText("下一步建議")).toBeInTheDocument();
+  });
+
+  it("lets action takers change the activity status menu", () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: "行動者判讀" }));
+    fireEvent.change(screen.getByRole("combobox", { name: "目前狀態" }), {
+      target: { value: "blocked" },
+    });
+
+    expect(screen.getByRole("combobox", { name: "目前狀態" })).toHaveValue(
+      "blocked",
+    );
+    expect(screen.queryByText("行動提醒")).not.toBeInTheDocument();
+  });
+
+  it("keeps the action-taker lens separate from the editing workbench", () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: "整理工作台" }));
+
+    expect(screen.getByText("人類草稿")).toBeInTheDocument();
+    expect(screen.queryByLabelText("行動者判讀")).not.toBeInTheDocument();
   });
 
   it("keeps draft CRUD as learner work instead of starter output", () => {

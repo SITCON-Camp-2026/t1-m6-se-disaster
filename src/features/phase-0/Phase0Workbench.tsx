@@ -69,7 +69,7 @@ export function Phase0Workbench({
 
           <div className="workbench__stats" aria-label="整理統計">
             <div className="workbench__stat-card">
-              <span className="workbench__stat-label">可信的資訊</span>
+              <span className="workbench__stat-label">草稿高可信</span>
               <strong>{trustedCount}</strong>
             </div>
             <div className="workbench__stat-card">
@@ -77,7 +77,7 @@ export function Phase0Workbench({
               <strong>{pendingCount}</strong>
             </div>
             <div className="workbench__stat-card">
-              <span className="workbench__stat-label">總 mission 數量</span>
+              <span className="workbench__stat-label">原始資訊數</span>
               <strong>{totalMissionCount}</strong>
             </div>
           </div>

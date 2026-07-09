@@ -210,8 +210,20 @@ button {
   gap: 16px;
 }
 
+.action-lens-panel__layout {
+  display: grid;
+  grid-template-columns: minmax(150px, 190px) minmax(0, 1fr);
+  gap: 16px;
+}
+
+.action-lens-panel__main {
+  display: grid;
+  gap: 16px;
+}
+
 .workbench__queue,
 .workbench__checklist,
+.action-lens,
 .judgement-card {
   border: 1px solid #dbe4ef;
   border-radius: 8px;
@@ -245,6 +257,163 @@ button {
   display: flex;
   justify-content: space-between;
   gap: 16px;
+}
+
+.action-lens {
+  display: grid;
+  gap: 14px;
+  border-color: #c9d8e8;
+  background: #ffffff;
+}
+
+.action-lens__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.action-lens h3,
+.action-lens h4 {
+  margin: 0;
+}
+
+.action-lens__section {
+  display: grid;
+  gap: 8px;
+}
+
+.action-lens__section p,
+.action-lens__next-step p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.action-lens__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.action-lens__quick-facts {
+  display: grid;
+  gap: 8px;
+}
+
+.action-lens__quick-fact {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #dbe4ef;
+  border-radius: 8px;
+  padding: 12px;
+  background: #ffffff;
+}
+
+.action-lens__quick-fact-label {
+  flex: 0 0 auto;
+  color: #5f6b7a;
+  font-weight: 700;
+}
+
+.action-lens__quick-fact--status {
+  border-color: #f0c36a;
+  border-left: 5px solid #d89614;
+  background: #fff8e5;
+}
+
+.action-lens__activity-select {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.action-lens__activity-select span {
+  flex: 0 0 auto;
+  color: #5f6b7a;
+  font-weight: 700;
+}
+
+.action-lens__activity-select select {
+  width: min(100%, 320px);
+  border: 1px solid #cfd8e3;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font: inherit;
+  font-weight: 700;
+  background: #ffffff;
+}
+
+.action-lens__checks {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px;
+}
+
+.action-lens__chips span,
+.action-lens__check,
+.action-lens__credibility {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  border-radius: 999px;
+  padding: 5px 9px;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.action-lens__chips span {
+  background: #eef6ff;
+  color: #245d9d;
+}
+
+.action-lens__check {
+  border-radius: 8px;
+}
+
+.action-lens__check--yes {
+  background: #dff7e8;
+  color: #116b37;
+}
+
+.action-lens__check--no {
+  background: #fde2e1;
+  color: #9f1f17;
+}
+
+.action-lens__credibility--low {
+  background: #fde2e1;
+  color: #9f1f17;
+}
+
+.action-lens__credibility--medium-low {
+  background: #fff3cd;
+  color: #8a5a00;
+}
+
+.action-lens__credibility--medium {
+  background: #e9eef5;
+  color: #344054;
+}
+
+.action-lens__credibility--medium-high {
+  background: #dff7e8;
+  color: #116b37;
+}
+
+.action-lens__credibility--high {
+  background: #0f6b3f;
+  color: #ffffff;
+}
+
+.action-lens__next-step {
+  display: grid;
+  gap: 8px;
+  border-left: 4px solid #245d9d;
+  border-radius: 8px;
+  padding: 12px;
+  background: #f4f7fb;
 }
 
 .judgement-card h3,
@@ -349,6 +518,7 @@ button {
 }
 
 .judgement-card ul,
+.action-lens ul,
 .workbench__checklist ul {
   padding-left: 20px;
   line-height: 1.6;
@@ -420,7 +590,25 @@ button {
     grid-template-columns: 1fr;
   }
 
+  .action-lens-panel__layout {
+    grid-template-columns: 1fr;
+  }
+
   .judgement-summary {
     grid-template-columns: 1fr;
+  }
+
+  .action-lens__header {
+    display: grid;
+  }
+
+  .action-lens__quick-fact,
+  .action-lens__activity-select {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .action-lens__activity-select select {
+    width: 100%;
   }
 }
